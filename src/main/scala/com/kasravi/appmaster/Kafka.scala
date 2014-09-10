@@ -11,7 +11,7 @@ object KafkaServerConfig {
     load("application")
 
   def load(resource: String): KafkaServerConfig =
-    new KafkaServerConfig(ConfigFactory.load(resource).getConfig("test-server"))
+    new KafkaServerConfig(ConfigFactory.load(resource).getConfig("appmaster"))
 }
 
 class KafkaServerConfig(config: Config) {

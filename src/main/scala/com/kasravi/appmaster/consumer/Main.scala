@@ -13,10 +13,10 @@ object Main extends App {
   props.put("auto.commit.enable", "false")
 
   val consConn = Consumer.create(new ConsumerConfig(props))
-  val streams = consConn.createMessageStreams(Map("topic-a-2" -> 1),
+  val streams = consConn.createMessageStreams(Map("topic-a" -> 1),
     keyDecoder = new StringDecoder, valueDecoder = new DefaultEventDecoder)
 
-  streams("topic-a-2")(0).foreach { mm =>
+  streams("topic-a")(0).foreach { mm =>
     val event: Event = mm.message
     println(s"consumed ${event}")
   }

@@ -14,24 +14,19 @@ class AppMasterProcessor(val persistenceId: String) extends PersistentActor {
   def receiveCommand: Receive = {
     case i: Increment =>
       persist(i)(update)
-    case "snap" =>
-      saveSnapshot(state)
-    case SaveSnapshotSuccess(md) =>
-      println(s"snapshot saved (metadata = ${md})")
-    case SaveSnapshotFailure(md, e) =>
-      println(s"snapshot saving failed (metadata = ${md}, error = ${e.getMessage})")
     case PersistenceFailure(payload, snr, e) =>
       println(s"persistence failed (payload = ${payload}, sequenceNr = ${snr}, error = ${e.getMessage})")
+    case _ =>
+      println("unknown command")
   }
 
   def receiveRecover: Receive = {
     case i: Increment =>
       update(i)
-    case SnapshotOffer(md, snapshot: Int) =>
-      state = snapshot
-      println(s"state initialized: ${state} (metadata = ${md})")
     case RecoveryFailure(e) =>
       println(s"recovery failed (error = ${e.getMessage})")
+    case _ =>
+      println("unknown recover")
   }
 
   def update(i: Increment): Unit = {
@@ -42,13 +37,13 @@ class AppMasterProcessor(val persistenceId: String) extends PersistentActor {
 
 class AppMasterEventTopicMapper extends EventTopicMapper {
   def topicsFor(event: Event): Seq[String] = event.persistenceId match {
-    case "a" => List("topic-a-1", "topic-a-2")
-    case "b" => List("topic-b")
+    case topic:String => List(s"topic-${topic}")
     case _   => Nil
   }
 }
 
 object AppMaster extends App {
+  //Data types AppMasterProcessor needs to handle
   case class Increment(value: Int)
 
   val kafkaServer = new AppMasterKafkaServer(KafkaServerConfig.load("appmaster"))
@@ -57,5 +52,4 @@ object AppMaster extends App {
 
   actorA ! Increment(2)
   actorA ! Increment(3)
-  actorA ! "snap"
 }
